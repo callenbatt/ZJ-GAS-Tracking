@@ -55,6 +55,18 @@ class APIService {
       return e;
     }
   }
+
+  reqAll(requests: GoogleAppsScript.URL_Fetch.URLFetchRequest[]): any | Error {
+    try {
+      const responses = UrlFetchApp.fetchAll(requests);
+      return responses.map((response) => {
+        return JSON.parse(response.getContentText());
+      });
+    } catch (e) {
+      console.error("Error in ZendeskAPI.reqAll", e);
+      return e;
+    }
+  }
 }
 
 class ZendeskAPI extends APIService {
@@ -67,11 +79,11 @@ class ZendeskAPI extends APIService {
     this.baseUrl = `https://finalsite.zendesk.com/api/v2/`;
   }
 
-  getJiraLinks(pageAfter: string = "0"): ZendeskAPI.GetJiraLinksResponse {
-    return this.req(`jira/links`, `page[after]=${pageAfter}`);
+  getJiraLinks(lastLinkId: number): ZendeskAPI.GetJiraLinksResponse {
+    return this.req(`jira/links`, `page[after]=${lastLinkId}`);
   }
 
-  getTickets(ids: number[]): ZendeskAPI.GetTicketsResponse {
+  getTickets(ids: string[]): ZendeskAPI.GetTicketsResponse {
     return this.req(
       "tickets/show_many",
       `ids=${ids.join(",")}&include=organizations,groups,brands`
@@ -82,6 +94,23 @@ class ZendeskAPI extends APIService {
     return this.req(
       `v2/tickets/${id}/incidents`,
       `include=organizations,groups,brands`
+    );
+  }
+  getAllTicketIncidents(
+    ids: number[]
+  ): ZendeskAPI.GetTicketIncidentsResponse[] {
+    return this.reqAll(
+      ids.map((id) => {
+        return {
+          url: `${this.baseUrl}tickets/${id}/incidents?include=organizations,groups,brands`,
+          method: "get",
+          headers: {
+            Authorization: `Basic ${this.auth}`,
+          },
+          contentType: "application/json",
+          muteHttpExceptions: false,
+        };
+      })
     );
   }
 }
@@ -96,6 +125,22 @@ class JiraAPI extends APIService {
 
   getIssue(id: number): JiraAPI.GetIssueResponse {
     return this.req(`/issue/${id}`);
+  }
+
+  getAllIssues(ids: string[]): JiraAPI.GetIssueResponse[] {
+    return this.reqAll(
+      ids.map((id) => {
+        return {
+          url: `${this.baseUrl}/issue/${id}`,
+          method: "get",
+          headers: {
+            Authorization: `Basic ${this.auth}`,
+          },
+          contentType: "application/json",
+          muteHttpExceptions: false,
+        };
+      })
+    );
   }
 }
 

@@ -40,12 +40,12 @@ declare namespace ZendeskAPI {
 
   export interface JiraLink {
     ticket_id: string;
-    issue_id: number;
+    issue_id: string;
     issue_key: string;
     created_at: string;
     id: number;
     updated_at: string;
-    url: string;
+    url?: string;
   }
 
   export interface Organization {
@@ -92,12 +92,14 @@ declare namespace JiraAPI {
         name: string;
         key: string;
       };
-      components: {
-        self: string;
-        id: string;
-        name: string;
-        description: string;
-      };
+      components: [
+        {
+          self: string;
+          id: string;
+          name: string;
+          description: string;
+        }
+      ];
       customfield_11903?: {
         value: string;
       };
@@ -106,6 +108,7 @@ declare namespace JiraAPI {
       issuetype: {
         name: string;
       };
+      summary: string;
     };
   }
 }
@@ -115,7 +118,7 @@ declare namespace ZendeskLegacyAPI {
     link: {
       issue_id: number;
       issue_key: string;
-      ticket_id: string;
+      ticket_id: number;
     };
   }
 
